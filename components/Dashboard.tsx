@@ -49,8 +49,8 @@ export default function Dashboard(props) {
     const { publicKey, signMessage } = useWallet();
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [selectedServers, setSelectedServers] = useState([]);
-    const [solValue, setSolValue] = useState(0)
-    const [minNftValue, setMinNftValue] = useState(0)
+    const [solValue, setSolValue] = useState(30)
+    const [minNftValue, setMinNftValue] = useState(3)
     const handleSolValueChange = (value: any) => setSolValue(value);
     const handleMinNftValueChange = (value: any) => setMinNftValue(value);
     const [sidebarContent, setSidebarContent] = useState([]);
@@ -331,6 +331,10 @@ export default function Dashboard(props) {
         setSelectedServers(newArray);
     };
 
+    let label = "";
+    if (calcData.solPerNft){
+        label = `${calcData.solPerNft} SOL`;
+    }
 
     return (
         <>
@@ -359,10 +363,10 @@ export default function Dashboard(props) {
                         <Text width='150px' fontWeight='bold'>Total NFTs:</Text>
                         <Text fontWeight='bold'>{calcData.mintsCount}</Text>
                     </Flex>
-                    {/* <Flex>
+                    <Flex>
                         <Text width='150px' fontWeight='bold'>SOL per NFT:</Text>
-                        <Text fontWeight='bold'>{calcData.solPerNft} SOL</Text>
-                    </Flex> */}
+                        <Text fontWeight='bold'>{label}</Text>
+                    </Flex>
                 </ModalBody>
                 <ModalFooter>
                     <Button colorScheme='blue' mr={3} onClick={onOkHandler}>
