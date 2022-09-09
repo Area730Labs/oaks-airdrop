@@ -33,6 +33,7 @@ import {
     SliderTrack,
     SliderFilledTrack,
     SliderThumb,
+    useToast
 } from '@chakra-ui/react'
 import {
     WalletMultiButton
@@ -61,9 +62,16 @@ export default function Dashboard(props) {
         [key: number]: string,
        }, any] = useState({});
 
-    const [calcData, setCalcData] = useState({});
+    //@ts-ignore
+    const [calcData, setCalcData]: [
+        {
+            holdersCount: number,
+            mintsCount: number,
+            solPerNft: Number
+        }, any
+    ] = useState({});
     const [holderData, setHolderData] = useState({});
-    
+    const toast = useToast()
 
     const { isOpen: isApproveOpen , onOpen: onApproveOpen, onClose: onApproveClose } = useDisclosure()
 
@@ -163,6 +171,15 @@ export default function Dashboard(props) {
         setCustomWallets(newArray);
     };
 
+    const errorToast = () => {
+        toast({
+            title: 'Error',
+            status: 'error',
+            duration: 9000,
+            isClosable: true,
+          })
+    };
+
 
     const onOkHandler = async () => {
         onApproveClose();
@@ -192,14 +209,21 @@ export default function Dashboard(props) {
             })).json();
 
             if (Object.hasOwn(res, 'error')) {
-                alert('Error');
+                errorToast();
             } else {
                console.log(res)
+
+               toast({
+                title: 'Airdrop created',
+                status: 'success',
+                duration: 9000,
+                isClosable: true,
+              })
             }
         } catch (error) {
             console.log(error);
 
-            alert('Operation failed');
+            errorToast();
         } finally {
             onClose();
         }
@@ -246,7 +270,8 @@ export default function Dashboard(props) {
             })).json();
 
             if (Object.hasOwn(res, 'error')) {
-                alert('Failed to get data');
+                console.log('Failed to get data');
+                errorToast();
             } else {
                 console.log(res.data.length);
 
@@ -273,7 +298,7 @@ export default function Dashboard(props) {
         } catch (error) {
             console.log(error);
 
-            alert('Operation failed');
+            errorToast();
         } finally {
             onClose();
         }
@@ -334,10 +359,10 @@ export default function Dashboard(props) {
                         <Text width='150px' fontWeight='bold'>Total NFTs:</Text>
                         <Text fontWeight='bold'>{calcData.mintsCount}</Text>
                     </Flex>
-                    <Flex>
+                    {/* <Flex>
                         <Text width='150px' fontWeight='bold'>SOL per NFT:</Text>
                         <Text fontWeight='bold'>{calcData.solPerNft} SOL</Text>
-                    </Flex>
+                    </Flex> */}
                 </ModalBody>
                 <ModalFooter>
                     <Button colorScheme='blue' mr={3} onClick={onOkHandler}>
