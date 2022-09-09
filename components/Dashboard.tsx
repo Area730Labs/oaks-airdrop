@@ -62,6 +62,7 @@ export default function Dashboard(props) {
        }, any] = useState({});
 
     const [calcData, setCalcData] = useState({});
+    const [holderData, setHolderData] = useState({});
     
 
     const { isOpen: isApproveOpen , onOpen: onApproveOpen, onClose: onApproveClose } = useDisclosure()
@@ -164,23 +165,9 @@ export default function Dashboard(props) {
 
 
     const onOkHandler = async () => {
-        onApproveOpen();
-        
-        customWallets.forEach((elem:number) => {
-            const v = customWalletData[elem]
-            if (v) {
-                console.log(v);
-            }
-        });
-
-        return;
-
-        if (!appData) {
-            return;
-        }
+        onApproveClose();
 
         onOpen();
-
 
         if (!signMessage || !publicKey) {
             console.error('>> First connect a wallet');
@@ -189,32 +176,13 @@ export default function Dashboard(props) {
         }
 
         try {    
-            let choices: any[] = [];
-            console.log(1);
-            selectedServers.forEach((val, index) => {
-                if (val) {
-                    //@ts-ignore
-                    choices.push(appData[index].traitVal);
-                }
-            });
-            console.log(2);
-
-            
-            const data = {
-                'traits': choices
-            };
-
-            const message = new TextEncoder().encode(JSON.stringify(data));
-            const signature = await signMessage(message);
-            const base64str = Buffer.from(signature).toString('base64');
-
             const payload = {
-                'data': data,
-                'signature': base64str,
+                'sol_amount': solValue,
+                'holders': holderData,
                 'wallet': publicKey.toString(),
             };
 
-            const res = await (await fetch(`${API_URL}/get_oak_mints_for_traits`, {
+            const res = await (await fetch(`${API_URL}/oak_send_drop`, {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json, text/plain, */*',
@@ -224,20 +192,9 @@ export default function Dashboard(props) {
             })).json();
 
             if (Object.hasOwn(res, 'error')) {
-                alert('Failed to log in');
+                alert('Error');
             } else {
-                setSelectedMints(res);
-
-                const tokenMint = res[0];
-                const largestAccounts = await connection.getTokenLargestAccounts(
-                    new PublicKey(tokenMint)
-                );
-                const largestAccountInfo = await connection.getParsedAccountInfo(
-                    largestAccounts.value[0].address
-                );
-                //@ts-ignore
-                console.log('Owner: ' + largestAccountInfo.value.data.parsed.info.owner);
-                console.log('Mint: ' + tokenMint);
+               console.log(res)
             }
         } catch (error) {
             console.log(error);
@@ -261,8 +218,7 @@ export default function Dashboard(props) {
                 }
             });
 
-            alert(choices.length);
-            
+
             let wl_wallets: any[] = []
 
             customWallets.forEach((elem:number) => {
@@ -309,6 +265,8 @@ export default function Dashboard(props) {
                 };
 
                 setCalcData(cd);
+
+                setHolderData(res.data);
 
                 onApproveOpen();
             }
@@ -382,7 +340,7 @@ export default function Dashboard(props) {
                     </Flex>
                 </ModalBody>
                 <ModalFooter>
-                    <Button colorScheme='blue' mr={3}>
+                    <Button colorScheme='blue' mr={3} onClick={onOkHandler}>
                         Run airdrop
                     </Button>
                     <Button onClick={onApproveClose}>Cancel</Button>
